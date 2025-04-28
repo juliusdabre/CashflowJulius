@@ -4,7 +4,7 @@ from fpdf import FPDF
 import base64
 from datetime import date
 
-st.set_page_config(page_title="Propwealth Cashflow Calculator", layout="wide")
+st.set_page_config(page_title="Cashflow Calculator", layout="wide")
 
 # Propwealth Header
 st.markdown(
