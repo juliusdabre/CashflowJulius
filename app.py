@@ -8,7 +8,8 @@ st.title("🏠 Propwealth Cashflow Calculator")
 st.header("1. Property Purchase Details")
 address = st.text_input("Address", "1 Murtoa St Dallas")
 purchase_price = st.number_input("Purchase Price", value=550000)
-loan_amount = st.number_input("Loan Amount (6% Interest)", value=440000)
+loan_amount = st.number_input("Loan Amount", value=440000)
+loan_interest_rate = st.number_input("Loan Interest Rate (%)", value=6.0)
 deposit = st.number_input("Deposit (20%)", value=110000)
 stamp_duty = st.number_input("Estimated Stamp Duty", value=0)
 lmi = st.number_input("Estimated LMI", value=0)
@@ -32,12 +33,16 @@ with col2:
 st.header("3. Estimated Expenses")
 council = st.number_input("Council Fees ($/week)", value=38.46)
 insurance = st.number_input("Insurance ($/week)", value=19.23)
-mgmt_fees = st.number_input("Management Fees (5.5%) ($/week)", value=19.25)
-repayments = st.number_input("Repayments (6%) ($/week)", value=507.69)
+
+mgmt_fee_percent = st.number_input("Management Fee (%)", value=5.5)
+mgmt_fees = ((low_rent + high_rent) / 2) * (mgmt_fee_percent / 100)
+
+loan_repayments_weekly = ((loan_amount * (loan_interest_rate / 100)) / 12) / 4.33
+
 landlord_insurance = st.number_input("Landlord Insurance ($/week)", value=9.62)
 
-total_expenses = council + insurance + mgmt_fees + repayments + landlord_insurance
-st.warning(f"Total Weekly Expenses: ${total_expenses:.2f}")
+total_expenses = council + insurance + mgmt_fees + loan_repayments_weekly + landlord_insurance
+st.warning(f"💸 Total Weekly Expenses: ${total_expenses:.2f}")
 
 st.header("4. Estimated Cashflow Before Tax")
 cashflow_low = low_rent - total_expenses
