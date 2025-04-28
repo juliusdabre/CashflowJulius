@@ -9,7 +9,7 @@ st.set_page_config(page_title="Propwealth Cashflow Calculator", layout="wide")
 # Propwealth Header
 st.markdown(
     "<h1 style='text-align: center; background: linear-gradient(to right, #8e2de2, #4a00e0);"
-    "padding:10px; border-radius:10px; color:white;'>🏠 Propwealth Investment Calculator</h1>",
+    "padding:10px; border-radius:10px; color:white;'> Propwealth Investment Calculator</h1>",
     unsafe_allow_html=True
 )
 
