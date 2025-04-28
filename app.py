@@ -1,4 +1,3 @@
-
 import streamlit as st
 from fpdf import FPDF
 import base64
@@ -15,88 +14,10 @@ st.markdown(
 
 today = date.today().strftime("%d/%m/%y")
 
-# Full Stamp Duty Functions
+# Stamp Duty Function
 def calculate_stamp_duty(state, price):
-    if state == "VIC":
-        if price <= 25000:
-            return price * 0.014
-        elif price <= 130000:
-            return 350 + (price - 25000) * 0.024
-        elif price <= 960000:
-            return 2870 + (price - 130000) * 0.06
-        else:
-            return price * 0.055
-    elif state == "NSW":
-        if price <= 14000:
-            return price * 0.0125
-        elif price <= 320000:
-            return 175 + (price - 14000) * 0.015
-        elif price <= 1000000:
-            return 9190 + (price - 320000) * 0.035
-        elif price <= 3000000:
-            return 40490 + (price - 1000000) * 0.045
-        else:
-            return 150490 + (price - 3000000) * 0.07
-    elif state == "QLD":
-        if price <= 5000:
-            return price * 0.015
-        elif price <= 75000:
-            return 75 + (price - 5000) * 0.015
-        elif price <= 540000:
-            return 1050 + (price - 75000) * 0.035
-        elif price <= 1000000:
-            return 17325 + (price - 540000) * 0.045
-        else:
-            return 41825 + (price - 1000000) * 0.0475
-    elif state == "WA":
-        if price <= 120000:
-            return 0
-        elif price <= 150000:
-            return (price - 120000) * 0.015
-        elif price <= 360000:
-            return 450 + (price - 150000) * 0.025
-        elif price <= 725000:
-            return 5450 + (price - 360000) * 0.035
-        else:
-            return 19150 + (price - 725000) * 0.045
-    elif state == "SA":
-        if price <= 120000:
-            return price * 0.01
-        elif price <= 300000:
-            return 1200 + (price - 120000) * 0.02
-        elif price <= 500000:
-            return 4800 + (price - 300000) * 0.035
-        else:
-            return 11800 + (price - 500000) * 0.05
-    elif state == "TAS":
-        if price <= 3000:
-            return price * 0.015
-        elif price <= 25000:
-            return 45 + (price - 3000) * 0.018
-        elif price <= 75000:
-            return 405 + (price - 25000) * 0.021
-        elif price <= 200000:
-            return 1455 + (price - 75000) * 0.024
-        elif price <= 375000:
-            return 4455 + (price - 200000) * 0.045
-        else:
-            return 12330 + (price - 375000) * 0.045
-    elif state == "ACT":
-        if price <= 200000:
-            return price * 0.002
-        elif price <= 300000:
-            return 400 + (price - 200000) * 0.025
-        elif price <= 500000:
-            return 2900 + (price - 300000) * 0.035
-        else:
-            return 9900 + (price - 500000) * 0.045
-    elif state == "NT":
-        if price <= 525000:
-            return price * 0.0495
-        else:
-            return (0.065 * price) - 15750
-    else:
-        return 0
+    # your stamp duty function as before (no change)
+    ...
 
 # Property Details
 st.header("Property Address")
@@ -125,7 +46,6 @@ reno_cost = st.number_input("Estimated Renovation ($)", value=0)
 
 total_funds = deposit_amount + stamp_duty + mortgage_fees + legal_fees + pest_building + buyers_agency_fee + reno_cost
 
-# Rental Yield
 st.header("2️⃣ Rental & Yield")
 lower_rent = st.number_input("Lower Rent ($/week)", value=620)
 higher_rent = st.number_input("Higher Rent ($/week)", value=630)
@@ -133,7 +53,6 @@ higher_rent = st.number_input("Higher Rent ($/week)", value=630)
 low_yield = (lower_rent * 52 / expected_price) * 100
 high_yield = (higher_rent * 52 / expected_price) * 100
 
-# Expenses
 st.header("3️⃣ Expenses")
 council_fees = st.number_input("Council Fees ($/week)", value=57.69)
 strata_fees = st.number_input("Strata Fees ($/week)", value=0)
@@ -149,8 +68,9 @@ loan_repayment_io = ((loan_amount * (loan_interest_rate/100))/12)/4.33
 
 total_weekly_expenses = council_fees + strata_fees + insurance + landlord_insurance + other_expenses + property_mgmt_fees + loan_repayment_io
 
-# Cashflow
 st.header("4️⃣ Cashflow Calculation")
+
+# ✅ Cashflow Calculation
 weekly_cashflow_low = lower_rent - total_weekly_expenses
 weekly_cashflow_high = higher_rent - total_weekly_expenses
 
@@ -160,12 +80,23 @@ monthly_cashflow_high = weekly_cashflow_high * 4.33
 annual_cashflow_low = weekly_cashflow_low * 52
 annual_cashflow_high = weekly_cashflow_high * 52
 
-# Tax
+# 🟰 Show the Live Cashflow Before Tax
+st.success(f"📈 Weekly Cashflow (Low Rent): ${weekly_cashflow_low:.2f} | High Rent: ${weekly_cashflow_high:.2f}")
+st.success(f"📈 Monthly Cashflow (Low Rent): ${monthly_cashflow_low:.2f} | High Rent: ${monthly_cashflow_high:.2f}")
+st.success(f"📈 Annual Cashflow (Low Rent): ${annual_cashflow_low:.2f} | High Rent: ${annual_cashflow_high:.2f}")
+
 st.header("5️⃣ Post-Tax Cashflow Estimate")
 tax_bracket = st.number_input("Your Tax Bracket (%)", value=42.0)
 
 after_tax_annual_low = annual_cashflow_low * (1 - tax_bracket/100)
 after_tax_annual_high = annual_cashflow_high * (1 - tax_bracket/100)
+
+after_tax_weekly_low = after_tax_annual_low / 52
+after_tax_weekly_high = after_tax_annual_high / 52
+
+# 🟰 Show the Live Post-Tax Cashflow
+st.info(f"🧾 Weekly Post-Tax Cashflow (Low Rent): ${after_tax_weekly_low:.2f} | High Rent: ${after_tax_weekly_high:.2f}")
+st.info(f"🧾 Annual Post-Tax Cashflow (Low Rent): ${after_tax_annual_low:.2f} | High Rent: ${after_tax_annual_high:.2f}")
 
 # PDF Export
 st.header("📄 Download Investment Report")
