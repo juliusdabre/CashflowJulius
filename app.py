@@ -98,12 +98,11 @@ def calculate_stamp_duty(state, price):
     else:
         return 0
 
-# Property Address
+# Property Details
 st.header("Property Address")
 address = st.text_input("Address", "41 Redwood Avenue Hampton Park VIC 3976")
 state = st.selectbox("State", ["VIC", "NSW", "QLD", "WA", "SA", "TAS", "ACT", "NT"], index=0)
 
-# Purchase Inputs
 st.header("1️⃣ Purchase Costs")
 expected_price = st.number_input("Expected Purchase Price ($)", value=765000)
 auto_stamp_duty = calculate_stamp_duty(state, expected_price)
@@ -126,6 +125,97 @@ reno_cost = st.number_input("Estimated Renovation ($)", value=0)
 
 total_funds = deposit_amount + stamp_duty + mortgage_fees + legal_fees + pest_building + buyers_agency_fee + reno_cost
 
-# Remaining parts (Rental, Expenses, Cashflow, PDF Generation) are similar to before...
+# Rental Yield
+st.header("2️⃣ Rental & Yield")
+lower_rent = st.number_input("Lower Rent ($/week)", value=620)
+higher_rent = st.number_input("Higher Rent ($/week)", value=630)
 
-st.info("Next steps: Would you like me to continue building the remaining Rental, Cashflow, and PDF generation sections to complete this full app?")
+low_yield = (lower_rent * 52 / expected_price) * 100
+high_yield = (higher_rent * 52 / expected_price) * 100
+
+# Expenses
+st.header("3️⃣ Expenses")
+council_fees = st.number_input("Council Fees ($/week)", value=57.69)
+strata_fees = st.number_input("Strata Fees ($/week)", value=0)
+insurance = st.number_input("Building Insurance ($/week)", value=0)
+landlord_insurance = st.number_input("Landlord Insurance ($/week)", value=38.46)
+other_expenses = st.number_input("Other Expenses ($/week)", value=9.62)
+
+property_mgmt_percent = st.number_input("Property Management Fee (%)", value=5.5)
+property_mgmt_fees = (lower_rent * property_mgmt_percent / 100)
+
+loan_interest_rate = st.number_input("Loan Repayment Interest Only Rate (%)", value=6.5)
+loan_repayment_io = ((loan_amount * (loan_interest_rate/100))/12)/4.33
+
+total_weekly_expenses = council_fees + strata_fees + insurance + landlord_insurance + other_expenses + property_mgmt_fees + loan_repayment_io
+
+# Cashflow
+st.header("4️⃣ Cashflow Calculation")
+weekly_cashflow_low = lower_rent - total_weekly_expenses
+weekly_cashflow_high = higher_rent - total_weekly_expenses
+
+monthly_cashflow_low = weekly_cashflow_low * 4.33
+monthly_cashflow_high = weekly_cashflow_high * 4.33
+
+annual_cashflow_low = weekly_cashflow_low * 52
+annual_cashflow_high = weekly_cashflow_high * 52
+
+# Tax
+st.header("5️⃣ Post-Tax Cashflow Estimate")
+tax_bracket = st.number_input("Your Tax Bracket (%)", value=42.0)
+
+after_tax_annual_low = annual_cashflow_low * (1 - tax_bracket/100)
+after_tax_annual_high = annual_cashflow_high * (1 - tax_bracket/100)
+
+# PDF Export
+st.header("📄 Download Investment Report")
+if st.button("Generate PDF Report"):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=11)
+
+    pdf.cell(200, 10, txt="Property Investment Report", ln=True, align='C')
+    pdf.cell(200, 10, txt=f"Address: {address}", ln=True, align='C')
+    pdf.cell(200, 10, txt=f"Date: {today}", ln=True, align='C')
+    pdf.ln(5)
+
+    pdf.set_font("Arial", "B", 11)
+    pdf.cell(90, 10, "Purchase Costs", 0, 0, 'L')
+    pdf.cell(90, 10, "Rental & Expenses", 0, 1, 'L')
+
+    pdf.set_font("Arial", size=10)
+    pdf.cell(90, 8, f"State: {state}", 0, 0)
+    pdf.cell(90, 8, f"Low Rent: ${lower_rent} /wk", 0, 1)
+
+    pdf.cell(90, 8, f"Purchase Price: ${expected_price:,.2f}", 0, 0)
+    pdf.cell(90, 8, f"High Rent: ${higher_rent} /wk", 0, 1)
+
+    pdf.cell(90, 8, f"Deposit: ${deposit_amount:,.2f}", 0, 0)
+    pdf.cell(90, 8, f"Yield (Low): {low_yield:.2f}%", 0, 1)
+
+    pdf.cell(90, 8, f"Stamp Duty: ${stamp_duty:,.2f}", 0, 0)
+    pdf.cell(90, 8, f"Yield (High): {high_yield:.2f}%", 0, 1)
+
+    pdf.cell(90, 8, f"Mortgage Fees: ${mortgage_fees:,.2f}", 0, 0)
+    pdf.cell(90, 8, f"Weekly Expenses: ${total_weekly_expenses:.2f}", 0, 1)
+
+    pdf.cell(90, 8, f"Legal Fees: ${legal_fees:,.2f}", 0, 0)
+    pdf.cell(90, 8, f"Loan Rate: {loan_interest_rate:.2f}%", 0, 1)
+
+    pdf.cell(90, 8, f"Total Funds: ${total_funds:,.2f}", 0, 1)
+
+    pdf.ln(5)
+    pdf.set_font("Arial", "B", 11)
+    pdf.cell(200, 10, "Cashflow Before and After Tax", 0, 1, 'C')
+
+    pdf.set_font("Arial", size=10)
+    pdf.cell(100, 8, f"Before Tax (Low Rent): ${annual_cashflow_low:,.2f}", 0, 0)
+    pdf.cell(100, 8, f"Before Tax (High Rent): ${annual_cashflow_high:,.2f}", 0, 1)
+
+    pdf.cell(100, 8, f"After Tax (Low Rent): ${after_tax_annual_low:,.2f}", 0, 0)
+    pdf.cell(100, 8, f"After Tax (High Rent): ${after_tax_annual_high:,.2f}", 0, 1)
+
+    pdf_output = pdf.output(dest='S').encode('latin-1')
+    b64 = base64.b64encode(pdf_output).decode()
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="Propwealth_Cashflow_Report.pdf">📥 Download Full Investment Report (PDF)</a>'
+    st.markdown(href, unsafe_allow_html=True)
